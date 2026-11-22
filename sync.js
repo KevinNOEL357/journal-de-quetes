@@ -129,8 +129,13 @@ function appliquer(fusion, version) {
 
 // Être prévenu en direct quand un autre appareil change le journal
 let canal = null;
-function ecouter() {
+async function ecouter() {
   if (!foyer || !client || canal) return;
+  // On donne au "temps réel" la connexion de cet appareil (sinon la base refuse de nous prévenir)
+  const { data } = await client.auth.getSession();
+  if (!data.session) return;
+  client.realtime.setAuth(data.session.access_token);
+  if (canal) return;
   canal = client.channel("foyer-" + foyer.id)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "foyers", filter: "id=eq." + foyer.id },
         (p) => { if (p.new.version !== foyer.version) synchroniser(); })
@@ -155,7 +160,7 @@ async function creerFoyer() {
   if (error) throw error;
   foyer = { id: data.id, code: data.code, version: data.version, derniere: Date.now() };
   sauverFoyer();
-  ecouter();
+  await ecouter();
 }
 
 async function rejoindreFoyer(code) {
@@ -168,7 +173,7 @@ async function rejoindreFoyer(code) {
   foyer = { id: data.id, code: data.code, version: data.version, derniere: Date.now() };
   sauverFoyer();
   localStorage.setItem(CLE, JSON.stringify(donnees));
-  ecouter();
+  await ecouter();
   afficher();
 }
 
