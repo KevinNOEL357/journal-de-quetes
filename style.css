@@ -1,0 +1,140 @@
+/* Les couleurs de l'appli, rangées dans des "variables" */
+:root {
+  --parchemin: #f3e7cc;
+  --encre: #3b2a1a;
+  --or: #d9a441;
+  --theme: #e8b40c; /* changée par app.js selon la thématique */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #1d1a16;
+  color: var(--encre);
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--parchemin);
+  padding-bottom: 120px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: var(--theme);
+  color: #fff;
+}
+header h1 { margin: 0; font-size: 22px; }
+#theme-icone { font-size: 28px; }
+
+form { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; }
+form input { flex: 1; padding: 10px; font-size: 16px; border: 2px solid #c9b58e; border-radius: 8px; }
+form select { padding: 8px; font-size: 14px; border-radius: 8px; }
+form button { width: 44px; font-size: 22px; border: 0; border-radius: 8px; background: var(--or); }
+
+ul { list-style: none; margin: 0; padding: 0 12px; }
+
+.quete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fffaf0;
+  border-left: 5px solid var(--theme);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px #0002;
+}
+.quete input[type=checkbox] { width: 24px; height: 24px; }
+.quete .titre { flex: 1; font-weight: 600; }
+.quete.faite .titre { text-decoration: line-through; opacity: .5; }
+.quete .qui { font-size: 12px; background: #efe3c6; border-radius: 10px; padding: 2px 8px; }
+.quete .supprimer { border: 0; background: none; font-size: 18px; cursor: pointer; }
+
+#vide { text-align: center; color: #8a7356; }
+
+/* ----- La roue ----- */
+#roue-fond {
+  position: fixed;
+  inset: 0;
+  background: #1d1a16dd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#roue-fond.cache { display: none; }
+#roue-fond .aide { color: #cbb994; margin: 0 0 8px; }
+#roue { width: min(92vw, 420px); animation: ouvre .3s ease-out; }
+#roue path { cursor: pointer; }
+@keyframes ouvre { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+#bouton-roue {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background: var(--or);
+  font-size: 30px;
+  box-shadow: 0 0 16px #d9a441aa;
+  z-index: 10;
+}
+
+/* ----- Étape 2 : options du formulaire, sections, retards ----- */
+.options { width: 100%; display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: #6b5a48; }
+.options input { padding: 6px; font-size: 14px; border: 1px solid #c9b58e; border-radius: 6px; }
+#champ-delai { width: 56px; }
+
+h2 { font-size: 14px; margin: 14px 12px 6px; text-transform: uppercase; letter-spacing: .5px; color: #7a5a36; }
+.quete .texte { flex: 1; }
+.quete .texte .titre { display: block; }
+.quete .info { display: block; font-size: 12px; color: #6b5a48; }
+.quete.retard { border-left-color: #c0392b; background: #fdecea; }
+.quete.retard .info { color: #c0392b; font-weight: 700; }
+.quete.faite .titre { text-decoration: line-through; opacity: .5; }
+.quete .modifier { border: 0; background: none; font-size: 16px; cursor: pointer; }
+.a-confirmer { display: block; font-size: 11px; color: #a0522d; font-style: italic; }
+
+/* ----- Étape 3 : le héros, l'XP, le message qui s'envole ----- */
+#heros { background: var(--encre); color: var(--parchemin); padding: 12px 16px 10px; }
+.ligne-heros { display: flex; align-items: center; gap: 8px; }
+#joueur { background: none; border: 0; color: var(--parchemin); font-size: 17px; font-weight: 700; padding: 0; cursor: pointer; }
+#renommer { background: none; border: 0; font-size: 14px; padding: 0 4px; margin-right: auto; cursor: pointer; }
+#coeurs { background: #e84393; color: #fff; border-radius: 12px; padding: 2px 10px; font-size: 14px; }
+#niveau { background: var(--or); color: var(--encre); border-radius: 12px; padding: 2px 10px; font-size: 14px; font-weight: 700; }
+.barre { height: 10px; background: #5a4632; border-radius: 5px; margin-top: 8px; overflow: hidden; }
+#barre-xp { display: block; height: 100%; width: 0; background: var(--or); transition: width .6s ease; }
+#texte-xp { font-size: 12px; opacity: .8; margin-top: 4px; }
+
+#toast {
+  position: fixed; left: 50%; top: 45%;
+  transform: translate(-50%, 0);
+  font-size: 28px; font-weight: 800; color: var(--or);
+  text-shadow: 0 2px 6px #000a;
+  pointer-events: none; opacity: 0; z-index: 20;
+}
+#toast.grand { font-size: 40px; color: #fff; }
+#toast.montre { animation: envol 1.4s ease-out; }
+@keyframes envol {
+  0%   { opacity: 0; transform: translate(-50%, 20px) scale(.8); }
+  20%  { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -80px) scale(1); }
+}
+
+/* ----- Étape 4 : rappel du jour, boutons Installer / Rappels ----- */
+.cache { display: none !important; }
+#rappel { margin: 10px 12px 0; padding: 10px 12px; border-radius: 8px; background: #fff3d6; border: 2px solid var(--or); font-size: 14px; }
+#rappel.urgent { background: #fdecea; border-color: #c0392b; color: #7a1f16; }
+#actions { display: flex; gap: 8px; padding: 8px 12px 0; flex-wrap: wrap; }
+#actions button { flex: 1; border: 0; border-radius: 18px; padding: 8px 10px; font-size: 14px; background: var(--encre); color: var(--parchemin); }
