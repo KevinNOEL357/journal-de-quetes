@@ -107,6 +107,10 @@ grant execute on function public.rejoindre_foyer(text) to authenticated;
 grant execute on function public.enregistrer(uuid, jsonb, bigint) to authenticated;
 grant execute on function public.quitter_foyer(uuid) to authenticated;
 
+-- 7 bis. Le droit de LIRE les tables (les règles de sécurité ci-dessus filtrent ensuite les lignes)
+grant usage on schema public to authenticated;
+grant select on public.foyers, public.membres to authenticated;
+
 -- 8. Le temps réel : prévenir les autres appareils dès qu'un journal change
 do $$ begin
   alter publication supabase_realtime add table public.foyers;
