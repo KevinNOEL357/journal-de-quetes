@@ -34,15 +34,51 @@ function joli(date) { // "2026-11-25" devient "25/11"
 const CLE = "journal-de-quetes";
 let donnees = JSON.parse(localStorage.getItem(CLE)) || { themeActif: "jour", quetes: [] };
 
-// Les joueurs : chacun a ses points d'expérience (XP) et ses cœurs.
+// Un identifiant unique (pour les quêtes, les gains…)
+function nouvelId() {
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+
+// Les joueurs ont un identifiant fixe (j1, j2) et un nom qu'on peut changer.
+// L'XP et les cœurs ne sont plus rangés dans le joueur : on les calcule avec le journal des gains.
+// (C'est plus sûr pour la synchro : deux téléphones ne peuvent pas s'écraser leurs points.)
 if (!donnees.joueurs) {
-  donnees.joueurs = { "Joueur 1": { xp: 0, coeurs: 0 }, "Joueur 2": { xp: 0, coeurs: 0 } };
-  donnees.joueurActif = "Joueur 1";
-  donnees.journal = []; // l'historique des gains : { date, joueur, xp }
+  donnees.joueurs = { j1: { nom: "Joueur 1" }, j2: { nom: "Joueur 2" } };
+  donnees.joueurActif = "j1";
+  donnees.journal = []; // l'historique des gains : { id, date, joueur, xp, coeurs }
+} else if (!donnees.joueurs.j1) {
+  // Les données de l'étape 3 utilisaient le nom comme clé : on les convertit.
+  const correspondance = {};
+  const nouveaux = {};
+  Object.entries(donnees.joueurs).forEach(([nom, j], i) => {
+    const id = "j" + (i + 1);
+    correspondance[nom] = id;
+    nouveaux[id] = { nom };
+    if (j.coeurs) donnees.journal.push({ id: "reprise-" + id, date: aujourdhui(), joueur: id, xp: 0, coeurs: j.coeurs });
+  });
+  donnees.joueurs = nouveaux;
+  for (const g of donnees.journal) {
+    if (correspondance[g.joueur]) g.joueur = correspondance[g.joueur];
+    if (!g.id) g.id = nouvelId();
+    if (!g.coeurs) g.coeurs = 0;
+  }
+  for (const q of donnees.quetes) if (q.gain && correspondance[q.gain.joueur]) q.gain.joueur = correspondance[q.gain.joueur];
+  donnees.joueurActif = correspondance[donnees.joueurActif] || "j1";
+}
+if (!donnees.supprimees) donnees.supprimees = {}; // { idQuete: moment de la suppression }
+
+function nomDe(idJoueur) {
+  return donnees.joueurs[idJoueur] ? donnees.joueurs[idJoueur].nom : "?";
+}
+
+// Noter "cette quête vient de changer" (sert à la synchro pour savoir quelle version est la plus récente)
+function touche(q) {
+  q.maj = Date.now();
 }
 
 function sauvegarder() {
   localStorage.setItem(CLE, JSON.stringify(donnees));
+  if (window.planifierSynchro) planifierSynchro(); // étape 5 : envoyer au foyer (voir sync.js)
 }
 
 // ===== 4. Les corvées du tableau blanc (chargées une seule fois) =====
@@ -67,9 +103,9 @@ const CORVEES = [
 ];
 if (!donnees.corveesChargees) {
   CORVEES.forEach(([titre, theme, delai, derniere], i) => {
-    donnees.quetes.push({ id: Date.now() + i, titre, theme, qui: "Les deux", delai, derniere, aConfirmer: true });
+    donnees.quetes.push({ id: "corvee-" + i, titre, theme, qui: "Les deux", delai, derniere, aConfirmer: true });
   });
-  donnees.quetes.push({ id: Date.now() + 99, titre: "Acheter de l'assouplissant (Drive)", theme: "ponctuel", qui: "Les deux", faite: false });
+  donnees.quetes.push({ id: "corvee-assouplissant", titre: "Acheter de l'assouplissant (Drive)", theme: "ponctuel", qui: "Les deux", faite: false });
   donnees.corveesChargees = true;
   sauvegarder();
 }
@@ -132,10 +168,21 @@ function gainDe(q) {
   return { xp, coeurs: 0 };
 }
 
+// Le total d'XP et de cœurs d'un joueur = la somme de ses gains dans le journal
+function totalDe(joueur) {
+  let xp = 0, coeurs = 0;
+  for (const g of donnees.journal) {
+    if (g.joueur !== joueur) continue;
+    xp += g.xp || 0;
+    coeurs += g.coeurs || 0;
+  }
+  return { xp: Math.max(0, xp), coeurs: Math.max(0, coeurs) };
+}
+
 function xpDuJour(joueur) {
   return donnees.journal
     .filter(j => j.date === aujourdhui() && j.joueur === joueur)
-    .reduce((total, j) => total + j.xp, 0);
+    .reduce((total, j) => total + (j.xp || 0), 0);
 }
 
 // Donner (ou reprendre) la récompense d'une quête
@@ -143,19 +190,15 @@ function recompenser(q, terminee) {
   if (terminee) {
     const joueur = donnees.joueurActif;
     const gain = gainDe(q);
-    const avant = niveauDe(donnees.joueurs[joueur].xp).niveau;
-    donnees.joueurs[joueur].xp += gain.xp;
-    donnees.joueurs[joueur].coeurs += gain.coeurs;
-    donnees.journal.push({ date: aujourdhui(), joueur, xp: gain.xp });
+    const avant = niveauDe(totalDe(joueur).xp).niveau;
+    donnees.journal.push({ id: nouvelId(), date: aujourdhui(), joueur, xp: gain.xp, coeurs: gain.coeurs });
     q.gain = { ...gain, joueur }; // on note qui a gagné quoi, pour pouvoir annuler
-    const apres = niveauDe(donnees.joueurs[joueur].xp).niveau;
+    const apres = niveauDe(totalDe(joueur).xp).niveau;
     if (apres > avant) annoncer(`🎉 NIVEAU ${apres} !`, true);
     else annoncer(gain.coeurs ? "+1 ❤️" : `+${gain.xp} XP`);
   } else if (q.gain) {
     const { joueur, xp, coeurs } = q.gain;
-    donnees.joueurs[joueur].xp = Math.max(0, donnees.joueurs[joueur].xp - xp);
-    donnees.joueurs[joueur].coeurs = Math.max(0, donnees.joueurs[joueur].coeurs - coeurs);
-    donnees.journal.push({ date: aujourdhui(), joueur, xp: -xp });
+    donnees.journal.push({ id: nouvelId(), date: aujourdhui(), joueur, xp: -xp, coeurs: -coeurs });
     delete q.gain;
   }
 }
@@ -172,9 +215,9 @@ function annoncer(texte, grand) {
 // Le bandeau du héros en haut
 function afficherHeros() {
   const joueur = donnees.joueurActif;
-  const j = donnees.joueurs[joueur];
+  const j = totalDe(joueur);
   const n = niveauDe(j.xp);
-  document.getElementById("joueur").textContent = "🛡️ " + joueur;
+  document.getElementById("joueur").textContent = "🛡️ " + nomDe(joueur);
   document.getElementById("niveau").textContent = "Niveau " + n.niveau;
   document.getElementById("coeurs").textContent = "❤️ " + j.coeurs;
   document.getElementById("barre-xp").style.width = (100 * n.reste / n.besoin) + "%";
@@ -183,27 +226,25 @@ function afficherHeros() {
 
 // Toucher son nom = changer de joueur
 document.getElementById("joueur").addEventListener("click", () => {
-  const noms = Object.keys(donnees.joueurs);
-  donnees.joueurActif = noms.find(n => n !== donnees.joueurActif);
+  const ids = Object.keys(donnees.joueurs);
+  donnees.joueurActif = ids.find(id => id !== donnees.joueurActif);
   sauvegarder();
   afficher();
 });
 
 // Le crayon à côté du nom = renommer le joueur affiché (le nom reste dans le téléphone)
 document.getElementById("renommer").addEventListener("click", () => {
-  const ancien = donnees.joueurActif;
+  const joueur = donnees.joueurs[donnees.joueurActif];
+  const ancien = joueur.nom;
   const nouveau = (prompt("Ton nom de héros :", ancien) || "").trim();
-  if (!nouveau || nouveau === ancien || donnees.joueurs[nouveau] || nouveau === "Les deux") return;
-  // on refait la liste des joueurs dans le même ordre, avec le nouveau nom
-  donnees.joueurs = Object.fromEntries(
-    Object.entries(donnees.joueurs).map(([nom, j]) => [nom === ancien ? nouveau : nom, j]));
-  donnees.joueurActif = nouveau;
-  // on met à jour le nom partout où il était écrit
+  const dejaPris = Object.values(donnees.joueurs).some(j => j.nom === nouveau);
+  if (!nouveau || nouveau === ancien || dejaPris || nouveau === "Les deux") return;
+  joueur.nom = nouveau;
+  joueur.maj = Date.now();
+  // on met à jour le nom dans les quêtes ("qui s'en charge")
   for (const q of donnees.quetes) {
-    if (q.qui === ancien) q.qui = nouveau;
-    if (q.gain && q.gain.joueur === ancien) q.gain.joueur = nouveau;
+    if (q.qui === ancien) { q.qui = nouveau; touche(q); }
   }
-  for (const j of donnees.journal) if (j.joueur === ancien) j.joueur = nouveau;
   sauvegarder();
   afficher();
 });
@@ -211,7 +252,7 @@ document.getElementById("renommer").addEventListener("click", () => {
 // La liste "qui s'en charge" du formulaire : les 2 joueurs + "Les deux"
 function remplirQui() {
   const liste = document.getElementById("champ-qui");
-  const choix = [...Object.keys(donnees.joueurs), "Les deux"];
+  const choix = [...Object.values(donnees.joueurs).map(j => j.nom), "Les deux"];
   const avant = liste.value;
   liste.innerHTML = "";
   for (const nom of choix) {
@@ -220,7 +261,7 @@ function remplirQui() {
     liste.appendChild(option);
   }
   if (choix.includes(avant)) liste.value = avant;
-  else liste.value = donnees.joueurActif;
+  else liste.value = nomDe(donnees.joueurActif);
 }
 
 // ===== 6. Afficher la liste, rangée en 3 sections =====
@@ -277,6 +318,7 @@ function ligne(q, e) {
   li.querySelector("input").addEventListener("change", () => {
     const terminee = cocher(q);
     recompenser(q, terminee);
+    touche(q);
     sauvegarder();
     afficher();
   });
@@ -286,12 +328,14 @@ function ligne(q, e) {
     const n = parseInt(rep, 10);
     q.delai = n > 0 ? n : null;
     delete q.aConfirmer;
+    touche(q);
     sauvegarder();
     afficher();
   });
   li.querySelector(".supprimer").addEventListener("click", () => {
     if (!confirm(`Supprimer « ${q.titre} » ?`)) return;
     donnees.quetes = donnees.quetes.filter(x => x.id !== q.id);
+    donnees.supprimees[q.id] = Date.now(); // pour que la suppression arrive aussi sur les autres appareils
     sauvegarder();
     afficher();
   });
@@ -304,7 +348,8 @@ document.getElementById("formulaire").addEventListener("submit", (e) => {
   const champ = document.getElementById("champ-titre");
   const delai = parseInt(document.getElementById("champ-delai").value, 10);
   donnees.quetes.push({
-    id: Date.now(),
+    id: nouvelId(),
+    maj: Date.now(),
     titre: champ.value.trim(),
     qui: document.getElementById("champ-qui").value,
     theme: donnees.themeActif,
@@ -349,7 +394,7 @@ function dessinerRoue() {
     </g>`;
   });
   const joueur = donnees.joueurActif;
-  const niv = niveauDe(donnees.joueurs[joueur].xp).niveau;
+  const niv = niveauDe(totalDe(joueur).xp).niveau;
   svg += `<circle cx="187.5" cy="187.5" r="${r - 4}" fill="#3b2a1a" stroke="#d9a441" stroke-width="3"/>
     <text x="187.5" y="168" font-size="10" fill="#cbb994" text-anchor="middle">NIVEAU</text>
     <text x="187.5" y="194" font-size="26" font-weight="800" fill="#d9a441" text-anchor="middle">${niv}</text>

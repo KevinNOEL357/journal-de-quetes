@@ -19,6 +19,7 @@
       <div class="ligne-heros">
         <button id="joueur">🛡️ Joueur 1</button>
         <button id="renommer" title="Changer le nom">✏️</button>
+        <button id="nuage" title="Synchro">☁️</button>
         <span id="coeurs">❤️ 0</span>
         <span id="niveau">Niveau 1</span>
       </div>
@@ -67,6 +68,17 @@
   <!-- Le petit message "+25 XP" -->
   <div id="toast"></div>
 
+  <!-- Le panneau de la synchro (étape 5) -->
+  <div id="panneau-cloud" class="cache">
+    <div class="panneau">
+      <button id="fermer-panneau" title="Fermer">✕</button>
+      <h3>☁️ Synchro du foyer</h3>
+      <div id="panneau-corps"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="app.js"></script>
+  <script src="sync.js"></script>
 </body>
 </html>

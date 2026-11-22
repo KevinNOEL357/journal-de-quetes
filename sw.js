@@ -2,8 +2,8 @@
 // C'est un petit programme qui tourne à côté de l'appli, même hors connexion.
 // Il garde une copie des fichiers de l'appli dans une "cache" (une réserve).
 
-const RESERVE = "quetes-v2"; // change ce numéro quand tu veux forcer une mise à jour
-const FICHIERS = ["./", "index.html", "style.css", "app.js", "manifest.json",
+const RESERVE = "quetes-v3"; // change ce numéro quand tu veux forcer une mise à jour
+const FICHIERS = ["./", "index.html", "style.css", "app.js", "sync.js", "manifest.json",
                   "icones/icone-192.png", "icones/icone-512.png", "icones/icone-180.png"];
 
 // 1. À l'installation : on remplit la réserve
@@ -23,6 +23,8 @@ self.addEventListener("activate", (e) => {
 //    et si ça ne marche pas (hors connexion), on prend la copie de la réserve.
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  // On ne garde en réserve que les fichiers de l'appli (pas les échanges avec Supabase)
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then(rep => {
