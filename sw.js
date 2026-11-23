@@ -2,7 +2,7 @@
 // C'est un petit programme qui tourne à côté de l'appli, même hors connexion.
 // Il garde une copie des fichiers de l'appli dans une "cache" (une réserve).
 
-const RESERVE = "quetes-v4"; // change ce numéro quand tu veux forcer une mise à jour
+const RESERVE = "quetes-v5"; // change ce numéro quand tu veux forcer une mise à jour
 const FICHIERS = ["./", "index.html", "style.css", "app.js", "sync.js", "manifest.json",
                   "icones/icone-192.png", "icones/icone-512.png", "icones/icone-180.png"];
 

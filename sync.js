@@ -23,7 +23,7 @@ function sauverFoyer() {
 }
 
 // Ces réglages restent propres à chaque appareil (on ne les partage pas).
-const CHAMPS_LOCAUX = ["themeActif", "joueurActif", "derniereNotif"];
+const CHAMPS_LOCAUX = ["themeActif", "joueurActif", "derniereNotif", "sectionActive", "sousActif", "rappelsEnvoyes", "filtresCal"];
 function partageable(d) {
   const copie = { ...d };
   for (const c of CHAMPS_LOCAUX) delete copie[c];
@@ -69,6 +69,11 @@ function fusionner(local, distant) {
   const gains = new Map();
   for (const g of [...(distant.journal || []), ...(local.journal || [])]) gains.set(g.id, g);
   res.journal = [...gains.values()].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+  // Les sous-onglets de Loisirs : on garde ceux des deux côtés
+  const sl = new Map();
+  for (const x of [...(distant.sousLoisirs || []), ...(local.sousLoisirs || [])]) if (!sl.has(x.id)) sl.set(x.id, x);
+  if (sl.size) res.sousLoisirs = [...sl.values()];
 
   res.corveesChargees = true;
   return res;
@@ -168,7 +173,8 @@ async function rejoindreFoyer(code) {
   const { data, error } = await client.rpc("rejoindre_foyer", { code_saisi: code });
   if (error) throw error;
   // On prend le journal du foyer à la place de celui de cet appareil (pour éviter les doublons)
-  const locaux = { themeActif: donnees.themeActif, derniereNotif: donnees.derniereNotif };
+  const locaux = {};
+  for (const c of CHAMPS_LOCAUX) if (donnees[c] !== undefined) locaux[c] = donnees[c];
   donnees = { ...data.donnees, ...locaux, joueurActif: "j2" };
   foyer = { id: data.id, code: data.code, version: data.version, derniere: Date.now() };
   sauverFoyer();

@@ -1,156 +1,176 @@
-/* Les couleurs de l'appli, rangées dans des "variables" */
+/* =====================================================================
+   Apparence « dark fantasy médiévale » : cuir, parchemin, métal et or
+   ===================================================================== */
 :root {
-  --parchemin: #f3e7cc;
-  --encre: #3b2a1a;
-  --or: #d9a441;
-  --theme: #e8b40c; /* changée par app.js selon la thématique */
+  --nuit: #141110; --cuir: #2b211a; --metal: #8c8170; --metal-clair: #c9bfa8;
+  --or: #c9a24a; --or-sombre: #8a6a2a; --parchemin: #e8dcc0; --parchemin2: #d8c8a2;
+  --encre: #2a1d12; --sang: #8e1f1f;
+  --theme: #4f6b3a; /* changée par app.js selon la section */
+  --titre: "Cinzel", Georgia, serif;
+  --texte: "EB Garamond", Georgia, serif;
 }
-
 * { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #1d1a16;
-  color: var(--encre);
-}
+body { margin: 0; background: var(--nuit); font-family: var(--texte); color: var(--encre); }
+button { font-family: inherit; cursor: pointer; }
+.cache { display: none !important; }
 
 .app {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background: var(--parchemin);
-  padding-bottom: 120px;
+  max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 130px;
+  background: radial-gradient(ellipse at 50% 0%, #3a2c2155, transparent 60%),
+              repeating-linear-gradient(45deg, #1b1512 0 3px, #181310 3px 6px);
 }
 
-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px;
-  background: var(--theme);
-  color: #fff;
+/* ----- Le bandeau du héros (cuir + métal) ----- */
+#heros {
+  position: sticky; top: 0; z-index: 5;
+  background: linear-gradient(#3a2c21, #241b15); border-bottom: 3px solid var(--metal);
+  box-shadow: inset 0 -1px 0 #000, 0 3px 8px #000a; padding: 12px 14px 10px; color: var(--parchemin);
 }
-header h1 { margin: 0; font-size: 22px; }
-#theme-icone { font-size: 28px; }
-
-form { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; }
-form input { flex: 1; padding: 10px; font-size: 16px; border: 2px solid #c9b58e; border-radius: 8px; }
-form select { padding: 8px; font-size: 14px; border-radius: 8px; }
-form button { width: 44px; font-size: 22px; border: 0; border-radius: 8px; background: var(--or); }
-
-ul { list-style: none; margin: 0; padding: 0 12px; }
-
-.quete {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fffaf0;
-  border-left: 5px solid var(--theme);
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 2px #0002;
+.ligne-heros { display: flex; align-items: center; gap: 8px; }
+#joueur { background: none; border: 0; color: var(--parchemin); padding: 0; font-family: var(--titre); font-weight: 800; font-size: 17px; letter-spacing: 1px; }
+#renommer { background: none; border: 0; color: var(--metal-clair); font-size: 15px; margin-right: auto; padding: 0 4px; }
+#nuage { background: none; border: 1px solid var(--metal); border-radius: 4px; padding: 1px 7px; font-size: 13px; color: var(--metal-clair); }
+#nuage.nuage-ok { color: #9fc28a; border-color: #6d8a5a; }
+#nuage.nuage-encours { color: #e0c06a; }
+#nuage.nuage-erreur { color: #e07a7a; border-color: var(--sang); }
+#coeurs { font-size: 15px; color: #e6a0a0; }
+#niveau {
+  font-family: var(--titre); font-weight: 800; color: var(--encre); font-size: 13px;
+  background: linear-gradient(var(--or), var(--or-sombre)); padding: 2px 10px 6px;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
 }
-.quete input[type=checkbox] { width: 24px; height: 24px; }
-.quete .titre { flex: 1; font-weight: 600; }
-.quete.faite .titre { text-decoration: line-through; opacity: .5; }
-.quete .qui { font-size: 12px; background: #efe3c6; border-radius: 10px; padding: 2px 8px; }
-.quete .supprimer { border: 0; background: none; font-size: 18px; cursor: pointer; }
+.barre { height: 9px; margin-top: 9px; background: #120e0b; border: 1px solid var(--metal); border-radius: 2px; overflow: hidden; }
+#barre-xp { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #7a5a1e, var(--or), #e9cf7a); transition: width .6s ease; }
+#texte-xp { font-size: 13px; color: var(--metal-clair); margin-top: 3px; font-style: italic; }
 
-#vide { text-align: center; color: #8a7356; }
+/* ----- Rappel du jour, boutons Installer / Rappels ----- */
+#rappel { margin: 10px 12px 0; padding: 8px 12px; border: 1px solid var(--or-sombre); border-radius: 3px; background: #241b15; color: var(--parchemin); font-size: 15px; }
+#rappel.urgent { border-color: var(--sang); background: #2a1414; color: #f0c8c8; }
+#actions { display: flex; gap: 8px; padding: 8px 12px 0; flex-wrap: wrap; }
+#actions button { flex: 1; border: 1px solid var(--metal); border-radius: 3px; padding: 8px 10px; font-size: 14px; background: #241b15; color: var(--parchemin); }
+
+/* ----- Titre de section façon enluminure, sous-onglets ----- */
+.titre-page {
+  display: flex; align-items: center; gap: 10px; margin: 16px 14px 10px; color: var(--or);
+  font-family: var(--titre); font-weight: 800; font-size: 21px; letter-spacing: 2px; text-transform: uppercase;
+}
+.titre-page::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--or), transparent); }
+.sous { display: flex; gap: 6px; margin: 0 12px 10px; overflow-x: auto; scrollbar-width: none; }
+.sous button {
+  flex: 0 0 auto; font-family: var(--titre); font-weight: 600; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 7px 10px; border: 1px solid var(--metal); color: var(--metal-clair); background: #1e1713; border-radius: 2px;
+}
+.sous button.on { background: linear-gradient(var(--or), var(--or-sombre)); color: var(--encre); border-color: var(--or); }
+
+/* ----- Boutons ----- */
+.bouton {
+  display: block; width: calc(100% - 24px); margin: 8px 12px; padding: 11px; text-align: center;
+  font-family: var(--titre); font-weight: 800; letter-spacing: 1px; font-size: 14px; text-transform: uppercase;
+  color: var(--encre); background: linear-gradient(#e0c06a, var(--or) 50%, var(--or-sombre));
+  border: 1px solid #000; border-radius: 3px; box-shadow: inset 0 1px 0 #fff6;
+}
+.bouton.fer { background: linear-gradient(#5a5048, #3a332d); color: var(--parchemin); box-shadow: inset 0 1px 0 #fff2; }
+.bouton.discret { background: none; border: 0; box-shadow: none; color: var(--metal-clair); font-family: var(--texte); text-transform: none; font-weight: 500; text-decoration: underline; letter-spacing: 0; }
+#ajouter { margin-top: 0; }
+
+/* ----- Les parchemins et les quêtes ----- */
+.parchemin {
+  margin: 0 12px 10px; padding: 6px 14px; border-radius: 3px;
+  background: radial-gradient(ellipse at 30% 20%, #f1e6cc, var(--parchemin) 45%, var(--parchemin2));
+  box-shadow: inset 0 0 18px #8a6a2a55, 0 2px 0 #000, 0 0 0 1px #5a4630;
+}
+.h2 { font-family: var(--titre); font-weight: 800; font-size: 12px; letter-spacing: 2px; color: #a08860; margin: 14px 14px 6px; text-transform: uppercase; }
+.h2.rouge { color: #d05a5a; }
+.quete { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px dashed #a08860; }
+.quete:last-child { border-bottom: 0; }
+.case { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; margin: 0; flex: 0 0 auto; border: 2px solid var(--encre); border-radius: 2px; background: #f6eedb; display: grid; place-content: center; }
+.case:checked { background: var(--encre); }
+.case:checked::after { content: "✓"; color: var(--parchemin); font-size: 16px; font-weight: 700; }
+.texte { flex: 1; min-width: 0; cursor: pointer; }
+.titre { display: block; font-weight: 700; font-size: 17px; line-height: 1.15; }
+.info { display: block; font-size: 13px; color: #5d4a33; font-style: italic; }
+.quete.retard .titre, .quete.retard .info { color: var(--sang); }
+.quete.retard .info { font-style: normal; font-weight: 700; }
+.quete.faite .titre { text-decoration: line-through; opacity: .55; }
+.qui { font-size: 12px; color: #5d4a33; border: 1px solid #a08860; border-radius: 2px; padding: 0 5px; white-space: nowrap; }
+.qui:empty { display: none; }
+.pastille { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+.heure { font-family: var(--titre); font-weight: 800; font-size: 13px; color: #6a4b26; width: 42px; flex: 0 0 auto; }
+.heure:empty { width: 0; }
+.vide { text-align: center; color: #8a7356; font-style: italic; margin: 12px 0; }
+.rayon { font-family: var(--titre); font-size: 11px; letter-spacing: 2px; color: var(--or-sombre); margin: 10px 0 0; font-weight: 800; }
+.note { margin: 8px 16px; color: var(--metal-clair); font-size: 13px; font-style: italic; text-align: center; }
+
+/* ----- Le calendrier ----- */
+.filtres { display: flex; gap: 6px; margin: 0 12px 10px; flex-wrap: wrap; }
+.filtres button { font-size: 13px; padding: 4px 8px; border: 1px solid var(--metal); border-radius: 2px; color: var(--parchemin); background: #1e1713; display: flex; align-items: center; gap: 5px; }
+.filtres button.eteint { opacity: .45; }
+.filtres i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.mois { display: flex; align-items: center; justify-content: space-between; margin: 0 8px 6px; }
+.mois span { font-family: var(--titre); font-weight: 800; letter-spacing: 2px; color: var(--or); font-size: 19px; }
+.mois button { background: none; border: 0; color: var(--parchemin); font-size: 26px; padding: 0 12px; }
+.grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; padding: 6px 0; align-items: start; }
+.grille > * { margin: 0; }
+.jsem { font-family: var(--titre); font-size: 10px; text-align: center; color: #6a4b26; font-weight: 800; }
+.jour { height: 42px; border: 1px solid #b9a37a; background: #f3e9d2; border-radius: 2px; font-size: 14px; padding: 2px 4px; position: relative; text-align: left; vertical-align: top; color: var(--encre); font-family: var(--texte); display: block; }
+.jour.vide { background: none; border: 0; }
+.jour.auj { outline: 2px solid var(--sang); font-weight: 800; }
+.jour.sel { background: var(--encre); color: var(--parchemin); }
+.points { position: absolute; bottom: 3px; left: 4px; display: flex; gap: 2px; }
+.points i { width: 7px; height: 7px; border-radius: 50%; display: block; }
 
 /* ----- La roue ----- */
-#roue-fond {
-  position: fixed;
-  inset: 0;
-  background: #1d1a16dd;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-#roue-fond.cache { display: none; }
-#roue-fond .aide { color: #cbb994; margin: 0 0 8px; }
-#roue { width: min(92vw, 420px); animation: ouvre .3s ease-out; }
-#roue path { cursor: pointer; }
-@keyframes ouvre { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#roue-fond { position: fixed; inset: 0; z-index: 8; background: #0b0908e8; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 80px; }
+.roue-titre { margin: 0; font-family: var(--titre); font-weight: 800; color: var(--or); letter-spacing: 3px; font-size: 16px; }
+#roue-fond .aide { margin: 4px 0 8px; color: var(--metal-clair); font-style: italic; font-size: 14px; }
+#roue { width: min(96vw, 420px); animation: ouvre .3s ease-out; }
+#roue g { cursor: pointer; }
+.nom-part, .cinzel { font-family: var(--titre); }
+.nom-part { font-size: 13px; font-weight: 800; fill: #f1e6cc; letter-spacing: .5px; }
+@keyframes ouvre { from { transform: scale(.3) rotate(-30deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
 
+/* ----- Le sceau rouge ----- */
 #bouton-roue {
-  position: fixed;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  background: var(--or);
-  font-size: 30px;
-  box-shadow: 0 0 16px #d9a441aa;
-  z-index: 10;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10;
+  width: 72px; height: 72px; border-radius: 50%; color: var(--parchemin); font-size: 30px;
+  background: radial-gradient(circle at 35% 30%, #b23030, #7a1414 60%, #4a0a0a);
+  border: 3px solid var(--or); box-shadow: 0 0 0 3px #000, 0 4px 14px #000;
 }
 
-/* ----- Étape 2 : options du formulaire, sections, retards ----- */
-.options { width: 100%; display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: #6b5a48; }
-.options input { padding: 6px; font-size: 14px; border: 1px solid #c9b58e; border-radius: 6px; }
-#champ-delai { width: 56px; }
-
-h2 { font-size: 14px; margin: 14px 12px 6px; text-transform: uppercase; letter-spacing: .5px; color: #7a5a36; }
-.quete .texte { flex: 1; }
-.quete .texte .titre { display: block; }
-.quete .info { display: block; font-size: 12px; color: #6b5a48; }
-.quete.retard { border-left-color: #c0392b; background: #fdecea; }
-.quete.retard .info { color: #c0392b; font-weight: 700; }
-.quete.faite .titre { text-decoration: line-through; opacity: .5; }
-.quete .modifier { border: 0; background: none; font-size: 16px; cursor: pointer; }
-.a-confirmer { display: block; font-size: 11px; color: #a0522d; font-style: italic; }
-
-/* ----- Étape 3 : le héros, l'XP, le message qui s'envole ----- */
-#heros { background: var(--encre); color: var(--parchemin); padding: 12px 16px 10px; }
-.ligne-heros { display: flex; align-items: center; gap: 8px; }
-#joueur { background: none; border: 0; color: var(--parchemin); font-size: 17px; font-weight: 700; padding: 0; cursor: pointer; }
-#renommer { background: none; border: 0; font-size: 14px; padding: 0 4px; margin-right: auto; cursor: pointer; }
-#coeurs { background: #e84393; color: #fff; border-radius: 12px; padding: 2px 10px; font-size: 14px; }
-#niveau { background: var(--or); color: var(--encre); border-radius: 12px; padding: 2px 10px; font-size: 14px; font-weight: 700; }
-.barre { height: 10px; background: #5a4632; border-radius: 5px; margin-top: 8px; overflow: hidden; }
-#barre-xp { display: block; height: 100%; width: 0; background: var(--or); transition: width .6s ease; }
-#texte-xp { font-size: 12px; opacity: .8; margin-top: 4px; }
-
-#toast {
-  position: fixed; left: 50%; top: 45%;
-  transform: translate(-50%, 0);
-  font-size: 28px; font-weight: 800; color: var(--or);
-  text-shadow: 0 2px 6px #000a;
-  pointer-events: none; opacity: 0; z-index: 20;
-}
-#toast.grand { font-size: 40px; color: #fff; }
+/* ----- Le message qui s'envole ----- */
+#toast { position: fixed; left: 50%; top: 45%; transform: translate(-50%, 0); font-family: var(--titre); font-size: 28px; font-weight: 800; color: var(--or); text-shadow: 0 2px 6px #000; pointer-events: none; opacity: 0; z-index: 40; white-space: nowrap; }
+#toast.grand { font-size: 36px; color: #f1e6cc; }
 #toast.montre { animation: envol 1.4s ease-out; }
 @keyframes envol {
-  0%   { opacity: 0; transform: translate(-50%, 20px) scale(.8); }
-  20%  { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+  0% { opacity: 0; transform: translate(-50%, 20px) scale(.8); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
   100% { opacity: 0; transform: translate(-50%, -80px) scale(1); }
 }
 
-/* ----- Étape 4 : rappel du jour, boutons Installer / Rappels ----- */
-.cache { display: none !important; }
-#rappel { margin: 10px 12px 0; padding: 10px 12px; border-radius: 8px; background: #fff3d6; border: 2px solid var(--or); font-size: 14px; }
-#rappel.urgent { background: #fdecea; border-color: #c0392b; color: #7a1f16; }
-#actions { display: flex; gap: 8px; padding: 8px 12px 0; flex-wrap: wrap; }
-#actions button { flex: 1; border: 0; border-radius: 18px; padding: 8px 10px; font-size: 14px; background: var(--encre); color: var(--parchemin); }
-
-/* ----- Étape 5 : le nuage de synchro et son panneau ----- */
-#nuage { background: #5a4632; border: 0; border-radius: 12px; padding: 2px 8px; font-size: 14px; color: #fff; cursor: pointer; }
-#nuage.nuage-ok { background: #3f9d5a; }
-#nuage.nuage-encours { background: #b8860b; }
-#nuage.nuage-erreur { background: #c0392b; }
-#panneau-cloud { position: fixed; inset: 0; background: #1d1a16cc; display: flex; align-items: center; justify-content: center; z-index: 30; padding: 16px; }
-.panneau { position: relative; width: 100%; max-width: 380px; background: var(--parchemin); border-radius: 14px; padding: 18px; }
-.panneau h3 { margin: 0 0 10px; }
-.panneau button { display: block; width: 100%; margin: 8px 0; padding: 10px; font-size: 16px; border: 0; border-radius: 10px; background: var(--or); color: var(--encre); font-weight: 700; }
-.panneau button.discret { background: none; color: #8a7356; font-weight: 400; font-size: 14px; text-decoration: underline; }
-.panneau input { width: 100%; padding: 10px; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; border: 2px solid #c9b58e; border-radius: 8px; }
-.panneau .petit { font-size: 12px; color: #8a7356; margin: 2px 0 8px; }
-.panneau .code-foyer { font-size: 26px; font-weight: 800; letter-spacing: 3px; text-align: center; background: #fff; border-radius: 10px; padding: 10px; }
-#fermer-panneau { position: absolute; top: 8px; right: 8px; width: auto !important; margin: 0 !important; background: none !important; font-size: 18px !important; }
-#panneau-erreur { color: #c0392b; font-size: 14px; }
+/* ----- Les panneaux (formulaire, synchro) ----- */
+.modale { position: fixed; inset: 0; z-index: 30; background: #0b0908d9; display: flex; align-items: flex-start; justify-content: center; padding: 16px; overflow-y: auto; }
+.panneau {
+  position: relative; width: 100%; max-width: 400px; margin: auto; padding: 18px 16px 10px; border-radius: 3px;
+  background: radial-gradient(ellipse at 30% 20%, #f1e6cc, var(--parchemin) 45%, var(--parchemin2));
+  box-shadow: inset 0 0 18px #8a6a2a55, 0 0 0 1px #5a4630, 0 0 0 4px #000, 0 0 0 6px var(--metal);
+}
+.panneau h3 { margin: 0 30px 12px 0; font-family: var(--titre); font-weight: 800; letter-spacing: 1px; color: #6a4b26; }
+.fermer { position: absolute; top: 8px; right: 8px; background: none; border: 0; font-size: 20px; color: var(--encre); }
+.panneau label { display: block; margin: 0 0 10px; font-family: var(--titre); font-weight: 600; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #6a4b26; }
+.panneau input:not([type=checkbox]), .panneau select {
+  display: block; width: 100%; margin-top: 3px; padding: 8px 10px; font-family: var(--texte); font-size: 17px;
+  background: #f6eedb; border: 1px solid #8a7356; border-radius: 2px; color: var(--encre); text-transform: none; letter-spacing: 0;
+}
+.deux { display: flex; gap: 10px; }
+.deux label { flex: 1; min-width: 0; }
+.bloc-rappel { margin-bottom: 10px; }
+.panneau label.coche { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid #8a7356; background: #efe3c6; border-radius: 2px; font-family: var(--texte); font-size: 16px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--encre); margin-bottom: 6px; }
+.panneau label.coche input { width: 20px; height: 20px; }
+.panneau .bouton { width: 100%; margin: 8px 0; }
+#panneau-corps p { font-size: 16px; }
+#panneau-corps .petit { font-size: 13px; color: #6a5a46; margin: 2px 0 8px; }
+#panneau-corps button { display: block; width: 100%; margin: 8px 0; padding: 10px; font-family: var(--titre); font-weight: 800; font-size: 14px; border: 1px solid #000; border-radius: 3px; background: linear-gradient(#e0c06a, var(--or) 50%, var(--or-sombre)); color: var(--encre); }
+#panneau-corps button.discret { background: none; border: 0; color: #6a5a46; font-family: var(--texte); font-weight: 400; text-decoration: underline; }
+#panneau-corps input { width: 100%; padding: 10px; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; border: 1px solid #8a7356; border-radius: 2px; background: #f6eedb; }
+#panneau-corps .code-foyer { font-family: var(--titre); font-size: 24px; font-weight: 800; letter-spacing: 3px; text-align: center; background: #f6eedb; border: 1px solid #8a7356; padding: 10px; }
+#panneau-erreur { color: var(--sang); font-size: 14px; }
